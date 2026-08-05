@@ -22,6 +22,7 @@ These are the only keys you need immediately for the command-line backend:
 - `OPENROUTER_MODEL`
 - `OPENROUTER_APP_NAME`
 - `OPENROUTER_SITE_URL`
+- `OPENROUTER_TIMEOUT_SECONDS`
 
 ### Runtime
 
@@ -57,6 +58,7 @@ These are the only keys you need immediately for the command-line backend:
 - `OPENROUTER_MODEL=anthropic/claude-sonnet-4`
 - `OPENROUTER_APP_NAME=TokenBusters-CX-Agent`
 - `OPENROUTER_SITE_URL=http://localhost`
+- `OPENROUTER_TIMEOUT_SECONDS=30`
 - `MASK_PII=true`
 - `ENABLE_OWNERSHIP_GATE=true`
 - `ENABLE_CAPABILITY_GATE=true`
@@ -116,6 +118,7 @@ OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_MODEL=openai/gpt-4o-mini
 OPENROUTER_APP_NAME=TokenBusters-CX-Agent
 OPENROUTER_SITE_URL=http://localhost
+OPENROUTER_TIMEOUT_SECONDS=30
 
 DEFAULT_ACTOR_ROLE=support_lead
 DEFAULT_REGION=IN

@@ -1,3 +1,16 @@
+python scripts/run_demo.py --scenario onboarding_abandonment --show-timelineshows a normal recovery case with a clear journey and recommendation
+
+python scripts/run_demo.py --scenario renewal_risk --role customer_success_manager --region USshows a high-risk retention case that passes governance
+
+python scripts/run_demo.py --scenario renewal_riskshows the same case being blocked when the actor is not authorized
+
+python scripts/run_evals.pyshows the eval gate and that the golden scenarios pass
+
+python scripts/run_api.pyshows the backend API is live
+
+
+
+
 # Personalized AI-Driven Customer Journey Mapping
 
 Backend-first hackathon scaffold for an Agentic CX Intelligence platform.
@@ -165,3 +178,29 @@ The final command-line demo should look like this:
 3. Implement CLI pipeline
 4. Add guardrails and eval gates
 5. Polish the demo narrative
+
+## Current Runnable Commands
+
+```bash
+python -m pip install -e .
+cx-agent generate-data
+cx-agent list-scenarios --verbose
+cx-agent demo --customer CUST_001
+cx-agent demo --scenario loyal_upsell --role sales_manager --region IN
+cx-agent demo --scenario onboarding_dropoff --with-llm
+cx-agent demo --scenario onboarding_abandonment --show-timeline
+cx-agent demo --scenario renewal_risk --output-json data/processed/renewal_risk_demo.json
+cx-agent demo --scenario renewal_risk --role customer_success_manager --region US
+cx-agent evals --show-details
+python scripts/run_api.py
+```
+
+## API Endpoints
+
+After starting the API, use:
+
+- `GET /health`
+- `GET /scenarios`
+- `GET /demo?scenario_id=onboarding_abandonment`
+- `GET /demo?scenario_id=renewal_risk&actor_role=customer_success_manager&actor_region=US`
+- `GET /evals`
