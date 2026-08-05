@@ -15,6 +15,12 @@ Build a command-line MVP that:
 
 This repo is intentionally backend-first so the team can demonstrate the intelligence layer before investing in a frontend.
 
+## Environment Setup
+
+Copy `.env.example` to `.env` and fill in the required values.
+
+See [ENVIRONMENT_SETUP.md](D:\EXL\Capstone\Token_busters\docs\ENVIRONMENT_SETUP.md) for the full key list and which ones are required now.
+
 ## MVP Scope
 
 For the hackathon, the system should run from the command line and demonstrate:
