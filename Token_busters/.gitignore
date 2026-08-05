@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+secrets/
+
+# Logs
+*.log
+logs/
+
+# Generated data artifacts
+data/raw/*
+data/synthetic/*
+data/processed/*
+!data/raw/README.md
+!data/synthetic/README.md
+!data/processed/README.md
+
+# Optional notebook artifacts
+.ipynb_checkpoints/

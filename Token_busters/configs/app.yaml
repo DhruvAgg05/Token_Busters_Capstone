@@ -1,0 +1,6 @@
+# Application configuration placeholder
+app_name: cx-agent
+environment: local
+default_role: support_lead
+mask_pii: true
+
