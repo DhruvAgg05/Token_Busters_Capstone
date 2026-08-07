@@ -15,9 +15,11 @@ flowchart TD
   F --> G["Recommend next best action"]
   G --> H["Check guardrails"]
   H --> I["Mask identity and record audit trail"]
-  I --> J["Score with judge rules"]
-  J --> K["Optional LLM commentary"]
-  K --> L["Show in CLI, API, and UI"]
+  I --> J["Create customer facts summary"]
+  J --> K["Create unified journey view"]
+  K --> L["Score with LLM judge"]
+  L --> M["Optional LLM commentary"]
+  M --> N["Show in CLI, API, and UI"]
 ```
 
 ## Step By Step
@@ -31,20 +33,22 @@ flowchart TD
 ### 2. Split events by source
 
 - `src/cx_agent/ingestion/files.py` groups events into source buckets like `web`, `app`, `support`, `payments`, `communications`, and `surveys`.
+- When LLM mode is enabled, `src/cx_agent/llm/openrouter.py` can classify the source bucket from the event details instead of using only the channel name.
 - This is why the demo can say it collects signals from multiple systems.
 - The split files live in `data/synthetic/sources/`.
 
 ### 3. Merge source feeds into one view
 
 - The pipeline loads the split files and turns them into one unified event stream.
-- If needed, it can fall back to the merged `data/synthetic/events.json` file.
+- `src/cx_agent/llm/openrouter.py` then synthesizes that stream into a short unified journey view.
 - This is the “one customer, many touchpoints” story.
 
 ### 4. Build the customer timeline
 
 - `src/cx_agent/journeys/builder.py` sorts all events for one customer by time.
 - The result is a clean journey timeline.
-- This is what the UI shows as the journey strip.
+- `src/cx_agent/llm/openrouter.py` also turns that timeline into a short human-readable summary for the UI and CLI.
+- This is what the UI shows as the journey strip and journey summary.
 
 ### 5. Detect the journey problem
 
@@ -63,7 +67,7 @@ flowchart TD
 
 ### 6. Build a customer profile
 
-- `src/cx_agent/personalization/profile.py` turns the timeline into a short profile.
+- `src/cx_agent/llm/openrouter.py` synthesizes the profile from the journey signals.
 - It captures:
   - preferred channel
   - sentiment
@@ -75,7 +79,7 @@ flowchart TD
 
 ### 7. Recommend the next best action
 
-- `src/cx_agent/agents/recommendations.py` chooses the action that best fits the journey and profile.
+- `src/cx_agent/llm/openrouter.py` generates the next best action from the same evidence.
 - Examples:
   - retention outreach
   - support escalation
@@ -108,9 +112,16 @@ flowchart TD
   - presentation summary
 - This is the final bundle used by the CLI and UI.
 
-### 11. Score the output
+### 11. Create customer facts
 
-- `src/cx_agent/evals/judge.py` checks whether the result is:
+- `src/cx_agent/llm/openrouter.py` turns the merged customer record into a short facts summary.
+- It focuses on the customer problem, source signals, and a few concise facts.
+- This is what the judge and dashboard use instead of raw communications.
+
+### 12. Score the output
+
+- `src/cx_agent/evals/judge.py` asks the LLM judge to score the result.
+- The judge returns:
   - evidence-backed
   - privacy-safe
   - governance-explained
@@ -118,17 +129,17 @@ flowchart TD
   - decision-clear
 - That score is what the judge sees.
 
-### 12. Persist the run artifact
+### 13. Persist the run artifact
 
 - Every demo run writes a JSON artifact to `data/processed/audit_runs/`.
 - The artifact stores the masked payload, judge score, audit trail, and run metadata.
 
-### 13. Optional LLM explanation
+### 14. Optional LLM explanation
 
-- `src/cx_agent/llm/openrouter.py` can create a short explanation or judge commentary if an API key is configured.
-- If no key is configured, the demo still works with the rule-based output.
+- `src/cx_agent/llm/openrouter.py` can create a short explanation if an API key is configured.
+- It keeps the response short and grounded in the merged evidence.
 
-### 14. Present it in three ways
+### 15. Present it in three ways
 
 - **CLI** for the technical demo operator.
 - **API** for structured access and the dashboard.

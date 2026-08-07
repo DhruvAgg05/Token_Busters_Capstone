@@ -87,5 +87,26 @@ class JudgeResult:
     error: str | None = None
 
 
+@dataclass
+class CustomerFactSummary:
+    enabled: bool
+    used: bool
+    summary: str
+    problem_statement: str
+    facts: list[str]
+    source_signals: list[str]
+    error: str | None = None
+
+
+@dataclass
+class UnifiedJourneyView:
+    enabled: bool
+    used: bool
+    summary: str
+    key_touchpoints: list[str]
+    source_signals: list[str]
+    error: str | None = None
+
+
 def to_dict(model: Any) -> dict[str, Any]:
     return asdict(model)

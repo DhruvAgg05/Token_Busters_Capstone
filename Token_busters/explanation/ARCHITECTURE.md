@@ -9,7 +9,7 @@ This project has four main layers:
 
 ## Portrait Diagram
 
-![Architecture portrait](Token_busters\explanation\architecture-portrait.png)
+![Architecture portrait](architecture-portrait.png)
 
 ## Flowchart
 
@@ -30,7 +30,8 @@ flowchart TD
     C5["Guardrails"]
     C6["Audit trail"]
     C7["Judge scoring"]
-    C8["Optional LLM commentary"]
+    C8["Customer facts summary"]
+    C9["Optional LLM commentary"]
   end
 
   subgraph Access["Access Layer"]
@@ -50,9 +51,10 @@ flowchart TD
   C5 --> C6
   C6 --> C7
   C7 --> C8
-  C8 --> A1
-  C8 --> A2
-  C8 --> A3
+  C8 --> C9
+  C9 --> A1
+  C9 --> A2
+  C9 --> A3
 ```
 
 ## Layer 1: Data

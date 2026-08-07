@@ -1,6 +1,40 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from cx_agent.models import Customer, Event, JourneyResult
+
+
+JourneyRule = tuple[Callable[[set[str], list[str]], bool], str, str]
+
+
+STAGE_RULES: tuple[JourneyRule, ...] = (
+    (
+        lambda event_types, friction_points: "renewal_paid" in event_types and "campaign_click" in event_types,
+        "retained_growth",
+        "upsell_ready",
+    ),
+    (
+        lambda event_types, friction_points: {"form_error", "session_dropoff"}.issubset(friction_points),
+        "onboarding_abandoned",
+        "dropoff_risk",
+    ),
+    (
+        lambda event_types, friction_points: "payment_failure" in friction_points and "renewal_due" in event_types,
+        "renewal_at_risk",
+        "churn_risk",
+    ),
+    (
+        lambda event_types, friction_points: "payment_failure" in friction_points,
+        "onboarding_at_risk",
+        "dropoff_risk",
+    ),
+    (
+        lambda event_types, friction_points: "repeated_support_issue" in friction_points,
+        "service_recovery",
+        "escalation_risk",
+    ),
+)
 
 
 def build_customer_timeline(events: list[Event], customer_id: str) -> list[Event]:
@@ -12,6 +46,7 @@ def build_customer_timeline(events: list[Event], customer_id: str) -> list[Event
 
 def analyze_journey(customer: Customer, timeline: list[Event]) -> JourneyResult:
     event_types = [event.event_type for event in timeline]
+    event_type_set = set(event_types)
     friction_points: list[str] = []
     evidence: list[str] = []
     payment_context = "renewal" if "renewal_due" in event_types else "onboarding"
@@ -36,24 +71,7 @@ def analyze_journey(customer: Customer, timeline: list[Event]) -> JourneyResult:
         friction_points.append("negative_feedback")
         evidence.append("Negative customer feedback submitted after recent interactions.")
 
-    if "renewal_paid" in event_types and "campaign_click" in event_types:
-        stage = "retained_growth"
-        risk_label = "upsell_ready"
-    elif "form_error" in friction_points and "session_dropoff" in friction_points:
-        stage = "onboarding_abandoned"
-        risk_label = "dropoff_risk"
-    elif "payment_failure" in friction_points and "renewal_due" in event_types:
-        stage = "renewal_at_risk"
-        risk_label = "churn_risk"
-    elif "payment_failure" in friction_points:
-        stage = "onboarding_at_risk"
-        risk_label = "dropoff_risk"
-    elif "repeated_support_issue" in friction_points:
-        stage = "service_recovery"
-        risk_label = "escalation_risk"
-    else:
-        stage = _latest_stage(timeline)
-        risk_label = "stable"
+    stage, risk_label = _match_stage(event_type_set, friction_points, timeline)
 
     if not friction_points:
         friction_points.append("none")
@@ -72,3 +90,14 @@ def _latest_stage(timeline: list[Event]) -> str:
     if not timeline:
         return "unknown"
     return timeline[-1].stage_hint
+
+
+def _match_stage(event_types: set[str], friction_points: list[str], timeline: list[Event]) -> tuple[str, str]:
+    return next(
+        (
+            (stage, risk_label)
+            for predicate, stage, risk_label in STAGE_RULES
+            if predicate(event_types, friction_points)
+        ),
+        (_latest_stage(timeline), "stable"),
+    )

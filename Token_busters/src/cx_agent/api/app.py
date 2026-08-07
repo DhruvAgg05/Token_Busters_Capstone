@@ -27,7 +27,7 @@ from cx_agent.orchestration.pipeline import (
     run_presentation,
     serialize_demo_result,
 )
-from cx_agent.settings import load_settings
+from cx_agent.settings import Settings, load_settings
 
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -155,17 +155,9 @@ def judge(
     actor_region: str | None = Query(default=None),
     include_llm: bool = Query(default=False),
 ) -> JudgeReviewResponse:
-    if not customer_id and not scenario_id:
-        raise HTTPException(status_code=400, detail="Provide either customer_id or scenario_id.")
-    if customer_id and scenario_id:
-        raise HTTPException(status_code=400, detail="Use either customer_id or scenario_id, not both.")
-
     settings = load_settings()
     try:
-        resolved_customer_id = customer_id or find_customer_id_by_scenario(
-            settings.default_data_dir,
-            scenario_id or "",
-        )
+        resolved_customer_id = _resolve_customer_id(settings, customer_id, scenario_id)
         review = run_judge_review(
             settings,
             resolved_customer_id,
@@ -187,17 +179,9 @@ def presentation(
     actor_region: str | None = Query(default=None),
     include_llm: bool = Query(default=False),
 ) -> PresentationResponse:
-    if not customer_id and not scenario_id:
-        raise HTTPException(status_code=400, detail="Provide either customer_id or scenario_id.")
-    if customer_id and scenario_id:
-        raise HTTPException(status_code=400, detail="Use either customer_id or scenario_id, not both.")
-
     settings = load_settings()
     try:
-        resolved_customer_id = customer_id or find_customer_id_by_scenario(
-            settings.default_data_dir,
-            scenario_id or "",
-        )
+        resolved_customer_id = _resolve_customer_id(settings, customer_id, scenario_id)
         bundle = run_presentation(
             settings,
             resolved_customer_id,
@@ -218,17 +202,9 @@ def _resolve_demo_payload(
     actor_region: str | None,
     include_llm: bool,
 ) -> dict[str, object]:
-    if not customer_id and not scenario_id:
-        raise HTTPException(status_code=400, detail="Provide either customer_id or scenario_id.")
-    if customer_id and scenario_id:
-        raise HTTPException(status_code=400, detail="Use either customer_id or scenario_id, not both.")
-
     settings = load_settings()
     try:
-        resolved_customer_id = customer_id or find_customer_id_by_scenario(
-            settings.default_data_dir,
-            scenario_id or "",
-        )
+        resolved_customer_id = _resolve_customer_id(settings, customer_id, scenario_id)
         result = run_customer_demo(
             settings,
             resolved_customer_id,
@@ -240,6 +216,16 @@ def _resolve_demo_payload(
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     return serialize_demo_result(result)
+
+
+def _resolve_customer_id(settings: Settings, customer_id: str | None, scenario_id: str | None) -> str:
+    if not customer_id and not scenario_id:
+        raise HTTPException(status_code=400, detail="Provide either customer_id or scenario_id.")
+    if customer_id and scenario_id:
+        raise HTTPException(status_code=400, detail="Use either customer_id or scenario_id, not both.")
+    return customer_id or find_customer_id_by_scenario(settings.default_data_dir, scenario_id or "")
+
+
 def run() -> None:
     import uvicorn
 

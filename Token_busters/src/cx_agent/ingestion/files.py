@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Iterable
 
 from cx_agent.models import Customer, Event
+from cx_agent.settings import Settings
+from cx_agent.llm.openrouter import generate_source_bucket_label
 
 
 def write_json(path: Path, payload: object) -> None:
@@ -25,10 +27,24 @@ def save_events(path: Path, events: Iterable[Event]) -> None:
     write_json(path, [event.__dict__ for event in events])
 
 
-def save_events_by_source(directory: Path, events: Iterable[Event]) -> None:
+def save_events_by_source(directory: Path, events: Iterable[Event], settings: Settings | None = None) -> None:
     grouped_events: dict[str, list[Event]] = defaultdict(list)
+    classification_cache: dict[tuple[str, str, str, str, str], str] = {}
     for event in events:
-        grouped_events[source_bucket_for_channel(event.channel)].append(event)
+        event_payload = event.__dict__
+        source_name = source_bucket_for_channel(event.channel)
+        if settings is not None:
+            cache_key = (
+                event.channel,
+                event.event_type,
+                event.stage_hint,
+                event.outcome,
+                json.dumps(event.metadata, sort_keys=True),
+            )
+            if cache_key not in classification_cache:
+                classification_cache[cache_key], _, _ = generate_source_bucket_label(settings, event_payload)
+            source_name = classification_cache[cache_key]
+        grouped_events[source_name].append(event)
 
     directory.mkdir(parents=True, exist_ok=True)
     for source_name in sorted(grouped_events):
@@ -60,10 +76,11 @@ def load_events_from_source_directory(directory: Path) -> list[Event]:
 
 def source_bucket_for_channel(channel: str) -> str:
     normalized = channel.lower()
-    if normalized in {"payment", "transaction"}:
-        return "payments"
-    if normalized in {"email", "communication"}:
-        return "communications"
-    if normalized == "survey":
-        return "surveys"
-    return normalized
+    bucket_aliases = {
+        "payment": "payments",
+        "transaction": "payments",
+        "email": "communications",
+        "communication": "communications",
+        "survey": "surveys",
+    }
+    return bucket_aliases.get(normalized, normalized)

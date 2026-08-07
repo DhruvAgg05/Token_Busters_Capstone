@@ -8,13 +8,11 @@ from functools import lru_cache
 
 from langgraph.graph import END, StateGraph
 
-from cx_agent.agents.recommendations import recommend_next_best_action
 from cx_agent.guardrails.verification import capability_gate, mask_customer_id, ownership_gate
 from cx_agent.ingestion.files import source_bucket_for_channel
 from cx_agent.journeys.builder import analyze_journey, build_customer_timeline
-from cx_agent.llm.openrouter import generate_explanation
+from cx_agent.llm.openrouter import generate_customer_profile, generate_explanation, generate_recommendation
 from cx_agent.models import AuditEntry, Customer, Event
-from cx_agent.personalization.profile import build_profile
 from cx_agent.settings import Settings
 
 
@@ -121,7 +119,12 @@ def _analyze_journey_node(state: DemoGraphState) -> dict[str, object]:
 
 def _build_profile_node(state: DemoGraphState) -> dict[str, object]:
     customer = state["customer"]
-    profile = build_profile(customer, state["timeline"], state["journey"])  # type: ignore[arg-type]
+    profile, used, error = generate_customer_profile(
+        state["settings"],
+        customer,
+        state["timeline"],  # type: ignore[arg-type]
+        state["journey"],  # type: ignore[arg-type]
+    )
     return {
         "profile": profile,
         "audit_trail": [
@@ -133,6 +136,8 @@ def _build_profile_node(state: DemoGraphState) -> dict[str, object]:
                     "sentiment": profile.sentiment,
                     "recent_issue": profile.recent_issue,
                     "risk_level": profile.risk_level,
+                    "used_llm": used,
+                    "llm_error": error,
                 },
             )
         ],
@@ -141,11 +146,11 @@ def _build_profile_node(state: DemoGraphState) -> dict[str, object]:
 
 def _recommend_node(state: DemoGraphState) -> dict[str, object]:
     customer = state["customer"]
-    recommendation = recommend_next_best_action(
+    recommendation, used, error = generate_recommendation(
+        state["settings"],
         customer,
         state["profile"],  # type: ignore[arg-type]
         state["journey"],  # type: ignore[arg-type]
-        state["settings"].require_evidence_for_recommendations,
     )
     return {
         "recommendation": recommendation,
@@ -156,6 +161,8 @@ def _recommend_node(state: DemoGraphState) -> dict[str, object]:
                 {
                     "recommendation_category": recommendation.recommendation_category,
                     "requires_manual_review": recommendation.requires_manual_review,
+                    "used_llm": used,
+                    "llm_error": error,
                 },
             )
         ],

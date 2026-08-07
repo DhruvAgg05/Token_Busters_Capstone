@@ -105,7 +105,7 @@ def _run_generate_data(settings, seed: int) -> None:
     synthetic_root.mkdir(parents=True, exist_ok=True)
     save_customers(synthetic_root / "customers.json", customers)
     save_events(synthetic_root / "events.json", events)
-    save_events_by_source(source_root, events)
+    save_events_by_source(source_root, events, settings)
     write_json(synthetic_root / "goldens.json", goldens)
 
     print("=" * 72)
@@ -186,6 +186,29 @@ def _run_demo(settings, args) -> None:
         print(f"  Summary: {_console_safe(llm_result.summary)}")
         if llm_result.error:
             print(f"  Error: {_console_safe(llm_result.error)}")
+    if result.get("customer_facts") is not None:
+        facts_result = result["customer_facts"]
+        print("Customer facts:")
+        print(f"  Used: {facts_result.used}")
+        print(f"  Summary: {_console_safe(facts_result.summary)}")
+        print(f"  Problem: {_console_safe(facts_result.problem_statement)}")
+        print(f"  Signals: {_console_safe(', '.join(facts_result.source_signals))}")
+        print("  Facts:")
+        for fact in facts_result.facts:
+            print(f"    - {_console_safe(fact)}")
+        if facts_result.error:
+            print(f"  Error: {_console_safe(facts_result.error)}")
+    if result.get("unified_journey") is not None:
+        unified_result = result["unified_journey"]
+        print("Unified journey:")
+        print(f"  Used: {unified_result.used}")
+        print(f"  Summary: {_console_safe(unified_result.summary)}")
+        print(f"  Signals: {_console_safe(', '.join(unified_result.source_signals))}")
+        print("  Touchpoints:")
+        for item in unified_result.key_touchpoints:
+            print(f"    - {_console_safe(item)}")
+        if unified_result.error:
+            print(f"  Error: {_console_safe(unified_result.error)}")
     if result.get("judge") is not None:
         judge_result = result["judge"]
         print("Judge score:")
@@ -332,6 +355,10 @@ def _print_demo_section(demo: dict[str, object], show_details: bool) -> None:
     print(f"  Recommendation category: {_console_safe(recommendation['recommendation_category'])}")
     print(f"  Action allowed: {demo['action_allowed']}")
     print(f"  Judge score: {int(demo['judge']['score'])}/100")
+    if demo.get("customer_facts"):
+        facts = demo["customer_facts"]
+        print(f"  Customer problem: {_console_safe(facts['problem_statement'])}")
+        print(f"  Customer facts: {_console_safe('; '.join(facts['facts']))}")
     if show_details:
         print("  Evidence:")
         for item in journey["evidence"]:

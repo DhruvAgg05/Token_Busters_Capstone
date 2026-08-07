@@ -18,6 +18,7 @@ from cx_agent.ingestion.files import (
 from cx_agent.models import to_dict
 from cx_agent.journeys.builder import analyze_journey, build_customer_timeline
 from cx_agent.orchestration.graph import run_demo_graph
+from cx_agent.llm.openrouter import generate_customer_fact_summary, generate_unified_journey_view
 from cx_agent.settings import Settings
 
 
@@ -69,6 +70,12 @@ def run_customer_demo(
         "llm_explanation": graph_state.get("llm_explanation"),
         "audit_trail": graph_state["audit_trail"],
     }
+    serialized_result = serialize_demo_result(raw_result)
+    customer_facts = generate_customer_fact_summary(settings, serialized_result)
+    raw_result["customer_facts"] = customer_facts
+    serialized_result = serialize_demo_result(raw_result)
+    unified_journey = generate_unified_journey_view(settings, serialized_result)
+    raw_result["unified_journey"] = unified_journey
     serialized_result = serialize_demo_result(raw_result)
     judge_result = judge_demo_output(settings, serialized_result)
     demo_result = {**raw_result, "judge": judge_result}
@@ -196,6 +203,8 @@ def serialize_demo_result(result: dict[str, object]) -> dict[str, object]:
     timeline = [_mask_customer_fields(to_dict(event), masked_customer_id) for event in result["timeline"]]
     gates = [to_dict(gate) for gate in result["gates"]]
     llm_explanation = result["llm_explanation"]
+    customer_facts = result.get("customer_facts")
+    unified_journey = result.get("unified_journey")
     audit_trail = result.get("audit_trail", [])
     judge = result.get("judge")
     journey = _mask_customer_fields(to_dict(result["journey"]), masked_customer_id)
@@ -213,6 +222,8 @@ def serialize_demo_result(result: dict[str, object]) -> dict[str, object]:
         "gates": gates,
         "action_allowed": result["action_allowed"],
         "llm_explanation": None if llm_explanation is None else to_dict(llm_explanation),
+        "customer_facts": None if customer_facts is None else to_dict(customer_facts),
+        "unified_journey": None if unified_journey is None else to_dict(unified_journey),
         "audit_trail": [to_dict(item) for item in audit_trail],
         "judge": None if judge is None else to_dict(judge),
     }
@@ -237,14 +248,17 @@ def _build_decision_summary(serialized: dict[str, object]) -> str:
 
 def _safe_next_step(serialized: dict[str, object]) -> str:
     gates = serialized["gates"]
-    blocked_gate_names = [gate["gate_name"] for gate in gates if not gate["passed"]]
-    if not blocked_gate_names:
-        return "The action passed governance checks and can proceed through an approved workflow."
-    if "ownership" in blocked_gate_names and "capability" in blocked_gate_names:
-        return "Use an authorized actor with both the correct ownership scope and the required action capability."
-    if "ownership" in blocked_gate_names:
-        return "Route this case to an actor who owns the customer's region or account scope."
-    return "Route this action to a role that is allowed to perform the recommended intervention."
+    blocked_gate_names = frozenset(gate["gate_name"] for gate in gates if not gate["passed"])
+    next_steps = {
+        frozenset(): "The action passed governance checks and can proceed through an approved workflow.",
+        frozenset({"ownership"}): "Route this case to an actor who owns the customer's region or account scope.",
+        frozenset({"capability"}): "Route this action to a role that is allowed to perform the recommended intervention.",
+        frozenset({"ownership", "capability"}): "Use an authorized actor with both the correct ownership scope and the required action capability.",
+    }
+    return next_steps.get(
+        blocked_gate_names,
+        "Route this case to an authorized CX operator for review.",
+    )
 
 
 def decorate_demo_payload(serialized: dict[str, object]) -> dict[str, object]:

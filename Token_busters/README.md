@@ -50,7 +50,6 @@ CLI / API output
 - `data/synthetic/goldens.json` for evaluation scenarios
 - `data/processed/` for generated demo outputs and audit-run JSON files
 - `src/cx_agent/` for ingestion, journey logic, recommendations, guardrails, evals, CLI, API, and dashboard assets
-- `docs/` for supporting notes and walkthroughs
 - `explanation/` for the judge-facing pipeline, architecture, UI, and repo guide
 
 ## What We Have Done

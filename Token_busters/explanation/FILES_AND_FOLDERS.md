@@ -23,15 +23,6 @@ This guide matches the current repo tree exactly.
 - `renewal_risk_demo.json` - example generated output from a demo run.
 - `audit_runs/` - auto-generated JSON artifacts for each demo run.
 
-## `docs/`
-
-These are supporting walkthrough files.
-
-- `ARCHITECTURE_FLOW.md` - architecture diagram and layer breakdown.
-- `PIPELINE.md` - step-by-step runtime flow.
-- `REPO_MAP.md` - repo map.
-- `UI_GUIDE.md` - how to explain the dashboard to judges.
-
 ## `explanation/`
 
 This is the judge-facing source of truth.
@@ -68,26 +59,18 @@ This is the application code.
 
 - `builder.py` - builds timelines and infers journey stages.
 
-### `src/cx_agent/personalization/`
-
-- `profile.py` - creates the customer profile used for personalization.
-
-### `src/cx_agent/agents/`
-
-- `recommendations.py` - chooses the next best action.
-
 ### `src/cx_agent/guardrails/`
 
 - `verification.py` - ownership, capability, and masking rules.
 
 ### `src/cx_agent/llm/`
 
-- `openrouter.py` - optional LLM explanation and judge commentary.
+- `openrouter.py` - LLM-backed source classification, journey summarization, facts extraction, profile generation, recommendation generation, and judge scoring.
 
 ### `src/cx_agent/evals/`
 
 - `golden.py` - compares output to golden expectations.
-- `judge.py` - scores the output like a reviewer would.
+- `judge.py` - asks the LLM judge to score the output.
 
 ### `src/cx_agent/orchestration/`
 

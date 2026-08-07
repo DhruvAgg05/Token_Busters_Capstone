@@ -100,6 +100,25 @@ class LLMExplanationResponse(BaseModel):
     error: str | None = None
 
 
+class CustomerFactsResponse(BaseModel):
+    enabled: bool
+    used: bool
+    summary: str
+    problem_statement: str
+    facts: list[str]
+    source_signals: list[str]
+    error: str | None = None
+
+
+class UnifiedJourneyResponse(BaseModel):
+    enabled: bool
+    used: bool
+    summary: str
+    key_touchpoints: list[str]
+    source_signals: list[str]
+    error: str | None = None
+
+
 class DemoResponse(BaseModel):
     customer_id: str
     actor_role: str
@@ -117,6 +136,8 @@ class DemoResponse(BaseModel):
     audit_trail: list[AuditEntryResponse]
     judge: JudgeResponse | None = None
     llm_explanation: LLMExplanationResponse | None = None
+    customer_facts: CustomerFactsResponse | None = None
+    unified_journey: UnifiedJourneyResponse | None = None
 
 
 class JudgeReviewResponse(BaseModel):

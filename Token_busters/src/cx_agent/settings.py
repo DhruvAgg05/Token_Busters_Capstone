@@ -27,9 +27,7 @@ def _load_dotenv(env_path: Path) -> None:
 
 @dataclass(frozen=True)
 class Settings:
-    app_env: str
     app_name: str
-    log_level: str
     mask_pii: bool
     openrouter_api_key: str
     openrouter_base_url: str
@@ -42,11 +40,9 @@ class Settings:
     default_data_dir: Path
     default_output_dir: Path
     enable_llm: bool
-    enable_synthetic_data: bool
     pii_salt: str
     enable_ownership_gate: bool
     enable_capability_gate: bool
-    require_evidence_for_recommendations: bool
     enable_eval_gate: bool
     min_eval_pass_rate: float
 
@@ -56,9 +52,7 @@ def load_settings(project_root: Path | None = None) -> Settings:
     _load_dotenv(root / ".env")
 
     return Settings(
-        app_env=os.getenv("APP_ENV", "local"),
         app_name=os.getenv("APP_NAME", "cx-agent"),
-        log_level=os.getenv("LOG_LEVEL", "INFO"),
         mask_pii=_parse_bool(os.getenv("MASK_PII"), True),
         openrouter_api_key=os.getenv("OPENROUTER_API_KEY", ""),
         openrouter_base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
@@ -71,13 +65,9 @@ def load_settings(project_root: Path | None = None) -> Settings:
         default_data_dir=root / os.getenv("DEFAULT_DATA_DIR", "data"),
         default_output_dir=root / os.getenv("DEFAULT_OUTPUT_DIR", "data/processed"),
         enable_llm=_parse_bool(os.getenv("ENABLE_LLM"), True),
-        enable_synthetic_data=_parse_bool(os.getenv("ENABLE_SYNTHETIC_DATA"), True),
         pii_salt=os.getenv("PII_SALT", ""),
         enable_ownership_gate=_parse_bool(os.getenv("ENABLE_OWNERSHIP_GATE"), True),
         enable_capability_gate=_parse_bool(os.getenv("ENABLE_CAPABILITY_GATE"), True),
-        require_evidence_for_recommendations=_parse_bool(
-            os.getenv("REQUIRE_EVIDENCE_FOR_RECOMMENDATIONS"), True
-        ),
         enable_eval_gate=_parse_bool(os.getenv("ENABLE_EVAL_GATE"), True),
         min_eval_pass_rate=float(os.getenv("MIN_EVAL_PASS_RATE", "0.80")),
     )

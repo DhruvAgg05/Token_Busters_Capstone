@@ -32,11 +32,15 @@ const elements = {
   journeyStage: document.getElementById("journey-stage"),
   journeyRisk: document.getElementById("journey-risk"),
   journeyTraceSummary: document.getElementById("journey-trace-summary"),
+  unifiedJourneySummary: document.getElementById("unified-journey-summary"),
   journeyStrip: document.getElementById("journey-strip"),
   recommendedAction: document.getElementById("recommended-action"),
   recommendationRationale: document.getElementById("recommendation-rationale"),
   judgeSummary: document.getElementById("judge-summary"),
   judgeDetails: document.getElementById("judge-details"),
+  customerFactsSummary: document.getElementById("customer-facts-summary"),
+  customerFactsProblem: document.getElementById("customer-facts-problem"),
+  customerFactsList: document.getElementById("customer-facts-list"),
   evidenceList: document.getElementById("evidence-list"),
   gateList: document.getElementById("gate-list"),
   analyticsSummary: document.getElementById("analytics-summary"),
@@ -163,6 +167,7 @@ function renderPresentation(bundle) {
   elements.judgeOrbScore.textContent = `${judge.score ?? "-"}`;
   updateScoreRing(Number(judge.score ?? 0));
   elements.journeyTraceSummary.textContent = `${demo.timeline.length} events`;
+  elements.unifiedJourneySummary.textContent = demo.unified_journey?.summary || "No unified journey summary available.";
   elements.execCustomer.textContent = demo.customer_id || "-";
   elements.execStage.textContent = `${demo.journey.journey_stage} - ${demo.journey.risk_label}`;
   elements.execJourney.textContent = `${demo.timeline.length} touchpoints`;
@@ -172,6 +177,8 @@ function renderPresentation(bundle) {
   elements.execJudge.textContent = `${judge.score ?? "-"} / 100`;
   elements.execJudgeDetail.textContent = `${demo.governance_status === "allowed" ? "Governance passed" : "Governance blocked"} - ${demo.recommendation.recommendation_category}`;
 
+  renderCustomerFacts(demo.customer_facts || null);
+  renderUnifiedJourney(demo.unified_journey || null);
   renderEvidence(demo.journey.evidence || []);
   renderGates(demo.gates || []);
   renderJourneyTrace(demo.timeline || []);
@@ -184,6 +191,39 @@ function renderEvidence(evidence) {
   elements.evidenceList.innerHTML = evidence.length
     ? evidence.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("")
     : "<li>No evidence available.</li>";
+}
+
+function renderCustomerFacts(customerFacts) {
+  if (!customerFacts) {
+    elements.customerFactsSummary.textContent = "No customer facts available.";
+    elements.customerFactsProblem.textContent = "-";
+    elements.customerFactsList.innerHTML = "<li>No structured facts available.</li>";
+    return;
+  }
+
+  elements.customerFactsSummary.textContent = customerFacts.summary || "Customer facts summary not available.";
+  const signals = Array.isArray(customerFacts.source_signals) && customerFacts.source_signals.length
+    ? customerFacts.source_signals.join(", ")
+    : "unknown";
+  elements.customerFactsProblem.textContent = `${customerFacts.problem_statement || "-"} | Signals: ${signals}`;
+  elements.customerFactsList.innerHTML = Array.isArray(customerFacts.facts) && customerFacts.facts.length
+    ? customerFacts.facts.map((fact) => `<li>${escapeHtml(fact)}</li>`).join("")
+    : "<li>No structured facts available.</li>";
+}
+
+function renderUnifiedJourney(unifiedJourney) {
+  if (!unifiedJourney) {
+    elements.unifiedJourneySummary.textContent = "No unified journey summary available.";
+    return;
+  }
+
+  const touchpoints = Array.isArray(unifiedJourney.key_touchpoints) && unifiedJourney.key_touchpoints.length
+    ? unifiedJourney.key_touchpoints.join(" · ")
+    : "No key touchpoints available.";
+  const signals = Array.isArray(unifiedJourney.source_signals) && unifiedJourney.source_signals.length
+    ? unifiedJourney.source_signals.join(", ")
+    : "unknown";
+  elements.unifiedJourneySummary.textContent = `${unifiedJourney.summary || "Unified journey unavailable."} | Touchpoints: ${touchpoints} | Signals: ${signals}`;
 }
 
 function renderGates(gates) {

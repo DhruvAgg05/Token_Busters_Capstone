@@ -19,4 +19,4 @@ If you want to explain the project to a judge, start here:
 
 That gives you the story, the diagram, and the repo map in one place.
 
-This folder is the source of truth for the showcase. The older `docs/` folder is still present, but it only holds supporting notes.
+This folder is the source of truth for the showcase.
