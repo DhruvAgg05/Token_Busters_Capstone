@@ -9,7 +9,7 @@ This project has four main layers:
 
 ## Portrait Diagram
 
-![Architecture portrait](D:/EXL/Capstone/Token_busters/explanation/6.png)
+![Architecture portrait](Token_busters\explanation\architecture-portrait.png)
 
 ## Flowchart
 
