@@ -4,10 +4,10 @@ Backend-first agentic CX MVP for turning scattered customer signals into one gov
 
 ## Quick Docs
 
-- `docs/PIPELINE.md` - how the whole system runs end to end
-- `docs/ARCHITECTURE_FLOW.md` - architecture and component diagram
-- `docs/UI_GUIDE.md` - how to explain the dashboard to judges
-- `docs/REPO_MAP.md` - what each folder and file does
+- `explanation/README.md` - start here for the full project explanation pack
+- `explanation/PIPELINE.md` - how the whole system works
+- `explanation/ARCHITECTURE.md` - architecture and flowchart
+- `explanation/FILES_AND_FOLDERS.md` - what each folder and file does
 
 ## What It Does
 
@@ -50,7 +50,8 @@ CLI / API output
 - `data/synthetic/goldens.json` for evaluation scenarios
 - `data/processed/` for generated demo outputs
 - `src/cx_agent/` for ingestion, journey logic, recommendations, guardrails, evals, CLI, API, and dashboard assets
-- `docs/` for the judge-facing pipeline, architecture, UI, and repo guides
+- `docs/` for supporting notes and walkthroughs
+- `explanation/` for the judge-facing pipeline, architecture, UI, and repo guide
 
 ## What We Have Done
 
