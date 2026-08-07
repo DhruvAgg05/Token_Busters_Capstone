@@ -96,6 +96,81 @@ def generate_explanation(
         )
 
 
+def generate_judge_commentary(
+    settings: Settings,
+    demo_payload: dict[str, Any],
+    score: int,
+    criteria: dict[str, bool],
+) -> LLMExplanationResult:
+    if not settings.enable_llm:
+        return LLMExplanationResult(
+            enabled=False,
+            used=False,
+            summary="LLM judging is disabled in configuration.",
+        )
+
+    if not settings.openrouter_api_key:
+        return LLMExplanationResult(
+            enabled=True,
+            used=False,
+            summary="LLM judge skipped because no OpenRouter API key is configured.",
+            error="missing_api_key",
+        )
+
+    payload = {
+        "model": settings.openrouter_model,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are a strict but concise CX demo judge. "
+                    "Assess the output for evidence use, governance safety, privacy protection, and clarity. "
+                    "Do not invent details. "
+                    "Return one short paragraph with your assessment."
+                ),
+            },
+            {"role": "user", "content": _build_judge_prompt(demo_payload, score, criteria)},
+        ],
+        "temperature": 0.1,
+    }
+
+    headers = {
+        "Authorization": f"Bearer {settings.openrouter_api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": settings.openrouter_site_url,
+        "X-Title": settings.openrouter_app_name,
+    }
+
+    try:
+        response_json = _post_json(
+            f"{settings.openrouter_base_url.rstrip('/')}/chat/completions",
+            payload,
+            headers,
+            timeout_seconds=settings.openrouter_timeout_seconds,
+        )
+        content = (
+            response_json.get("choices", [{}])[0]
+            .get("message", {})
+            .get("content", "")
+            .strip()
+        )
+        if not content:
+            return LLMExplanationResult(
+                enabled=True,
+                used=False,
+                summary="LLM judge returned an empty response.",
+                error="empty_response",
+            )
+        return LLMExplanationResult(enabled=True, used=True, summary=content)
+    except Exception as exc:
+        return LLMExplanationResult(
+            enabled=True,
+            used=False,
+            summary="LLM judge could not be generated, so the rule-based score is shown instead.",
+            error=str(exc),
+        )
+
+
 def _post_json(
     url: str,
     payload: dict[str, Any],
@@ -143,3 +218,37 @@ Evidence:
 {chr(10).join(evidence_lines)}
 """.strip()
 
+
+def _build_judge_prompt(
+    demo_payload: dict[str, Any],
+    score: int,
+    criteria: dict[str, bool],
+) -> str:
+    criterion_lines = [f"- {name}: {'PASS' if passed else 'FAIL'}" for name, passed in criteria.items()]
+    audit_lines = [f"- {entry['step']}: {entry['message']}" for entry in demo_payload.get("audit_trail", [])]
+    journey = demo_payload["journey"]
+    recommendation = demo_payload["recommendation"]
+    decision_summary = demo_payload.get("decision_summary") or (
+        f"Customer {demo_payload['customer_id']} is in stage {journey['journey_stage']} with risk {journey['risk_label']}. "
+        f"The recommended action is {recommendation['recommendation_category']}."
+    )
+    return f"""
+Judge this CX demo output using only the supplied data.
+
+Score: {score}/100
+
+Criteria:
+{chr(10).join(criterion_lines)}
+
+Customer: {demo_payload["customer_id"]}
+Journey stage: {journey["journey_stage"]}
+Risk label: {journey["risk_label"]}
+Action allowed: {demo_payload["action_allowed"]}
+Decision summary: {decision_summary}
+Recommended category: {recommendation["recommendation_category"]}
+
+Audit trail:
+{chr(10).join(audit_lines)}
+
+Return one short paragraph that says whether this is a strong, safe, evidence-backed demo output.
+""".strip()

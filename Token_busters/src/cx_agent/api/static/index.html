@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agentic CX Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="bg-shape bg-shape-one"></div>
+      <div class="bg-shape bg-shape-two"></div>
+
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Agentic CX Intelligence</p>
+          <h1>Customer journey, governance, and judge score in one place.</h1>
+          <p class="hero-copy">
+            Select a customer scenario, inspect the unified journey, review analytics coverage,
+            and see the final judge-ready verdict.
+          </p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <span class="stat-label">API</span>
+            <strong id="health-status">Checking...</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Scenarios</span>
+            <strong id="scenario-count">-</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Judge</span>
+            <strong id="judge-score-pill">-</strong>
+          </div>
+        </div>
+      </header>
+
+      <section class="panel executive">
+        <div class="panel-header">
+          <div>
+            <p class="section-kicker">Executive Summary</p>
+            <h2>What this demo is showing</h2>
+          </div>
+          <span id="exec-governance" class="chip chip-muted">Waiting</span>
+        </div>
+
+        <p id="presentation-summary" class="executive-copy">
+          Load a scenario to see the full customer story, the unified data view, and the judge result.
+        </p>
+
+        <div class="executive-grid">
+          <article class="executive-card">
+            <span class="card-label">Customer view</span>
+            <strong id="exec-customer">-</strong>
+            <p id="exec-stage" class="card-copy">-</p>
+          </article>
+          <article class="executive-card">
+            <span class="card-label">Unified journey</span>
+            <strong id="exec-journey">-</strong>
+            <p id="exec-coverage" class="card-copy">-</p>
+          </article>
+          <article class="executive-card">
+            <span class="card-label">Action decision</span>
+            <strong id="exec-action">-</strong>
+            <p id="exec-action-detail" class="card-copy">-</p>
+          </article>
+          <article class="executive-card">
+            <span class="card-label">Judge outcome</span>
+            <strong id="exec-judge">-</strong>
+            <p id="exec-judge-detail" class="card-copy">-</p>
+          </article>
+        </div>
+      </section>
+
+      <main class="layout">
+        <section class="panel controls">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">Control Center</p>
+              <h2>Choose the customer story</h2>
+            </div>
+            <button id="refresh-button" class="ghost-button" type="button">Refresh</button>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              <span>Scenario</span>
+              <select id="scenario-select"></select>
+            </label>
+            <label>
+              <span>Actor role</span>
+              <select id="role-select">
+                <option value="customer_success_manager">customer_success_manager</option>
+                <option value="support_lead">support_lead</option>
+                <option value="sales_manager">sales_manager</option>
+                <option value="compliance_viewer">compliance_viewer</option>
+              </select>
+            </label>
+            <label>
+              <span>Region</span>
+              <select id="region-select">
+                <option value="US">US</option>
+                <option value="IN">IN</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button id="load-button" class="primary-button" type="button">Run presentation</button>
+            <label class="toggle">
+              <input id="llm-toggle" type="checkbox" />
+              <span>Include LLM explanation</span>
+            </label>
+          </div>
+
+          <div class="scenario-meta">
+            <div>
+              <span class="meta-label">Customer</span>
+              <strong id="scenario-customer">-</strong>
+            </div>
+            <div>
+              <span class="meta-label">Expected stage</span>
+              <strong id="scenario-stage">-</strong>
+            </div>
+            <div>
+              <span class="meta-label">Expected category</span>
+              <strong id="scenario-category">-</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel story">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">Customer Story</p>
+              <h2>Journey and decision</h2>
+            </div>
+            <span id="governance-chip" class="chip">Waiting</span>
+          </div>
+
+          <div class="story-grid">
+            <article class="story-card accent">
+              <span class="card-label">Journey stage</span>
+              <strong id="journey-stage">-</strong>
+              <p id="journey-risk" class="card-copy">-</p>
+            </article>
+            <article class="story-card">
+              <span class="card-label">Recommended action</span>
+              <strong id="recommended-action">-</strong>
+              <p id="recommendation-rationale" class="card-copy">-</p>
+            </article>
+            <article class="story-card">
+              <span class="card-label">Judge verdict</span>
+              <div class="score-orb">
+                <div class="score-orb-ring" id="judge-orb-ring">
+                  <div class="score-orb-inner">
+                    <strong id="judge-orb-score">-</strong>
+                    <span>score</span>
+                  </div>
+                </div>
+              </div>
+              <strong id="judge-summary">-</strong>
+              <p id="judge-details" class="card-copy">-</p>
+            </article>
+          </div>
+
+          <div class="journey-strip-panel">
+            <div class="journey-strip-header">
+              <h3>Journey trace</h3>
+              <span id="journey-trace-summary" class="chip chip-muted">-</span>
+            </div>
+            <div id="journey-strip" class="journey-strip"></div>
+          </div>
+
+          <div class="subgrid">
+            <div class="subpanel">
+              <h3>Evidence trail</h3>
+              <ul id="evidence-list" class="list"></ul>
+            </div>
+            <div class="subpanel">
+              <h3>Gates</h3>
+              <ul id="gate-list" class="list"></ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel analytics">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">CX Analytics</p>
+              <h2>Corpus coverage</h2>
+            </div>
+            <span class="chip chip-muted" id="analytics-summary">-</span>
+          </div>
+
+          <div class="analytics-grid">
+            <div class="metric">
+              <span>Customers</span>
+              <strong id="metric-customers">-</strong>
+            </div>
+            <div class="metric">
+              <span>Events</span>
+              <strong id="metric-events">-</strong>
+            </div>
+            <div class="metric">
+              <span>Source buckets</span>
+              <strong id="metric-sources">-</strong>
+            </div>
+            <div class="metric">
+              <span>Judge score</span>
+              <strong id="metric-score">-</strong>
+            </div>
+          </div>
+
+          <div class="mini-columns">
+            <div>
+              <h3>Source coverage</h3>
+              <div id="source-bars" class="bars"></div>
+            </div>
+            <div>
+              <h3>Journey patterns</h3>
+              <div id="pattern-bars" class="bars"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel audit">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">Audit Trail</p>
+              <h2>What the agent saw</h2>
+            </div>
+            <span class="chip chip-muted">Provenance included</span>
+          </div>
+          <div id="audit-trail" class="audit-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

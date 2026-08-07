@@ -68,6 +68,24 @@ class GateResult:
     reason: str
 
 
+@dataclass
+class AuditEntry:
+    step: str
+    message: str
+    timestamp: str
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class JudgeResult:
+    enabled: bool
+    used: bool
+    score: int
+    passed: bool
+    summary: str
+    criteria: dict[str, bool]
+    error: str | None = None
+
+
 def to_dict(model: Any) -> dict[str, Any]:
     return asdict(model)
-

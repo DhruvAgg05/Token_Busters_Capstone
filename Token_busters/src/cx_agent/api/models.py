@@ -24,6 +24,15 @@ class ScenarioListResponse(BaseModel):
     scenarios: list[ScenarioRecord]
 
 
+class AnalyticsResponse(BaseModel):
+    totals: dict[str, int]
+    source_counts: dict[str, int]
+    channel_counts: dict[str, int]
+    stage_counts: dict[str, int]
+    risk_counts: dict[str, int]
+    friction_counts: dict[str, int]
+
+
 class EventResponse(BaseModel):
     event_id: str
     customer_id: str
@@ -67,6 +76,23 @@ class GateResponse(BaseModel):
     reason: str
 
 
+class AuditEntryResponse(BaseModel):
+    step: str
+    message: str
+    timestamp: str
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
+class JudgeResponse(BaseModel):
+    enabled: bool
+    used: bool
+    score: int
+    passed: bool
+    summary: str
+    criteria: dict[str, bool]
+    error: str | None = None
+
+
 class LLMExplanationResponse(BaseModel):
     enabled: bool
     used: bool
@@ -88,7 +114,26 @@ class DemoResponse(BaseModel):
     recommendation: RecommendationResponse
     gates: list[GateResponse]
     action_allowed: bool
+    audit_trail: list[AuditEntryResponse]
+    judge: JudgeResponse | None = None
     llm_explanation: LLMExplanationResponse | None = None
+
+
+class JudgeReviewResponse(BaseModel):
+    customer_id: str
+    actor_role: str
+    actor_region: str
+    governance_status: str
+    decision_summary: str
+    judge: JudgeResponse
+    safe_next_step: str
+
+
+class PresentationResponse(BaseModel):
+    presentation_summary: str
+    demo: DemoResponse
+    analytics: AnalyticsResponse
+    judge: JudgeResponse | None = None
 
 
 class TimelineResponse(BaseModel):

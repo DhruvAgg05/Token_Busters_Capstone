@@ -1,8 +1,0 @@
-# Eval configuration placeholder
-minimum_pass_rate: 0.8
-required_checks:
-  - journey_stage
-  - friction_label
-  - recommendation_category
-  - policy_compliance
-

@@ -1,9 +1,0 @@
-# Prompt configuration placeholder
-journey_summary: |
-  Summarize the customer journey using only the provided evidence.
-  Do not invent facts. If evidence is insufficient, say so.
-
-next_best_action: |
-  Recommend the safest next best action.
-  Respect policy constraints and verification gate outcomes.
-
