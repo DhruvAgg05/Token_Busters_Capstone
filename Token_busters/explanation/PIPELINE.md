@@ -118,12 +118,17 @@ flowchart TD
   - decision-clear
 - That score is what the judge sees.
 
-### 12. Optional LLM explanation
+### 12. Persist the run artifact
+
+- Every demo run writes a JSON artifact to `data/processed/audit_runs/`.
+- The artifact stores the masked payload, judge score, audit trail, and run metadata.
+
+### 13. Optional LLM explanation
 
 - `src/cx_agent/llm/openrouter.py` can create a short explanation or judge commentary if an API key is configured.
 - If no key is configured, the demo still works with the rule-based output.
 
-### 13. Present it in three ways
+### 14. Present it in three ways
 
 - **CLI** for the technical demo operator.
 - **API** for structured access and the dashboard.

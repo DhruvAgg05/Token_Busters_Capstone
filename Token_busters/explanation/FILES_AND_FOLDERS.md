@@ -21,6 +21,7 @@ This guide matches the current repo tree exactly.
 ### `data/processed/`
 
 - `renewal_risk_demo.json` - example generated output from a demo run.
+- `audit_runs/` - auto-generated JSON artifacts for each demo run.
 
 ## `docs/`
 
@@ -38,6 +39,7 @@ This is the judge-facing source of truth.
 - `README.md` - entry page for the explanation set.
 - `PIPELINE.md` - complete pipeline explanation.
 - `ARCHITECTURE.md` - flowchart and architecture breakdown.
+- `architecture-portrait.png` - portrait diagram image for slides.
 - `FILES_AND_FOLDERS.md` - current folder and file guide.
 
 ## `scripts/`

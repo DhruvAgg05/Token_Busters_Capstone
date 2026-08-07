@@ -6,6 +6,7 @@ This folder is the judge-friendly guide to the whole project.
 
 - `PIPELINE.md` - how the demo works end to end
 - `ARCHITECTURE.md` - the system architecture and flowchart
+- `architecture-portrait.png` - the portrait diagram image for slides
 - `FILES_AND_FOLDERS.md` - what every folder and important file does
 
 ## Best Use

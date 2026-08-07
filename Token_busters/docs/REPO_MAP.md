@@ -21,6 +21,7 @@ This file reflects the current repo tree. The `explanation/` folder is the prima
 ### `data/processed/`
 
 - `renewal_risk_demo.json` - example processed output for the showcase.
+- `audit_runs/` - auto-generated JSON artifacts for each demo run.
 
 ## `docs/`
 

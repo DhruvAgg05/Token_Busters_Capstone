@@ -7,10 +7,14 @@ This project has four main layers:
 3. governance
 4. presentation
 
+## Portrait Diagram
+
+![Architecture portrait](D:/EXL/Capstone/Token_busters/explanation/architecture-portrait.png)
+
 ## Flowchart
 
 ```mermaid
-flowchart LR
+flowchart TD
   subgraph Data["Data Layer"]
     D1["data/synthetic/customers.json"]
     D2["data/synthetic/events.json"]
@@ -39,7 +43,13 @@ flowchart LR
   D2 --> C1
   D3 --> C1
   D4 --> C7
-  C1 --> C2 --> C3 --> C4 --> C5 --> C6 --> C7 --> C8
+  C1 --> C2
+  C2 --> C3
+  C3 --> C4
+  C4 --> C5
+  C5 --> C6
+  C6 --> C7
+  C7 --> C8
   C8 --> A1
   C8 --> A2
   C8 --> A3
@@ -98,4 +108,4 @@ It tells the judge whether the output is:
 
 ## Short Explanation For Judges
 
-“The system ingests customer signals from multiple sources, reconstructs one journey, applies reasoning and guardrails, and then presents a safe, explainable CX decision.”
+The system ingests customer signals from multiple sources, reconstructs one journey, applies reasoning and guardrails, and then presents a safe, explainable CX decision.

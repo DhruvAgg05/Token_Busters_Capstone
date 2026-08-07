@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import json
+from datetime import datetime, timezone
 from pathlib import Path
 from collections import Counter
+from uuid import uuid4
 
 from cx_agent.evals.judge import judge_demo_output
 from cx_agent.evals.golden import evaluate_case, summarize_scores
@@ -67,11 +70,16 @@ def run_customer_demo(
         "audit_trail": graph_state["audit_trail"],
     }
     serialized_result = serialize_demo_result(raw_result)
+    judge_result = judge_demo_output(settings, serialized_result)
+    demo_result = {**raw_result, "judge": judge_result}
+    persisted_payload = serialize_demo_result(demo_result)
 
-    return {
-        **raw_result,
-        "judge": judge_demo_output(settings, serialized_result),
-    }
+    _persist_run_artifact(
+        settings,
+        artifact_type="customer_demo",
+        payload=persisted_payload,
+    )
+    return demo_result
 
 
 def run_judge_review(
@@ -274,3 +282,18 @@ def _mask_customer_fields(payload: dict[str, object], masked_customer_id: str) -
     if "customer_id" in output:
         output["customer_id"] = masked_customer_id
     return output
+
+
+def _persist_run_artifact(settings: Settings, artifact_type: str, payload: dict[str, object]) -> None:
+    run_directory = settings.default_output_dir / "audit_runs"
+    run_directory.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    customer_id = str(payload.get("customer_id", "unknown"))
+    safe_customer_id = customer_id.replace("/", "_").replace("\\", "_")
+    file_name = f"{timestamp}_{artifact_type}_{safe_customer_id}_{uuid4().hex[:8]}.json"
+    artifact = {
+        "artifact_type": artifact_type,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "payload": payload,
+    }
+    (run_directory / file_name).write_text(json.dumps(artifact, indent=2), encoding="utf-8")
